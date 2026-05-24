@@ -1,0 +1,15 @@
+# Local save/tool leftovers
+Backups/
+backups/
+last_backup.txt
+*.log
+CorpseReaper.log
+.roundtrip_*.sav
+*.tmp
+
+# Windows noise
+Thumbs.db
+Desktop.ini
+
+# Temporary folders
+_verify_extract_*/
