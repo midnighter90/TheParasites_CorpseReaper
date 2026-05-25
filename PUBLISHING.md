@@ -10,10 +10,11 @@ TheParasites_CorpseReaper
 
 ## Important License Note
 
-This tool is not open source.
+The source code is made available under a custom restricted source-available
+license.
 
-When creating the GitHub repository, do not select an open-source license
-template. The custom terms are already included in:
+When creating the GitHub repository, do not select a standard open-source
+license template. The custom terms are already included in:
 
 ```text
 LICENSE.md
@@ -29,6 +30,12 @@ licenses\Koffi-MIT-LICENSE.txt
 licenses\node-stream-zip-MIT-LICENSE.txt
 licenses\oodle-js-ISC-LICENSE.txt
 ```
+
+The license prohibits commercial use and hosting this tool, its source code,
+release archives, forks, mirrors, modified versions, or derivative packages on
+another website, file host, launcher, mod manager, package registry, repository
+hosting service, or repository outside the official repository controlled by the
+copyright holder.
 
 ## Create The Repository
 

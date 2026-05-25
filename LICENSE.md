@@ -1,9 +1,14 @@
-# The Parasites CorpseReaper License Terms
+# The Parasites CorpseReaper Source Availability and License Terms
 
 Copyright (c) 2026 The Parasites CorpseReaper Tool Author(s).
 All rights reserved.
 
-This is not an open-source license.
+The source code is made available for inspection, personal non-commercial use,
+and personal non-commercial modification.
+
+Because this license prohibits commercial use and hosting on other websites, it
+is a custom restricted source-available license and is not an OSI-approved
+open-source license.
 
 These terms apply to the original CorpseReaper tool code, launcher scripts,
 documentation, package layout, and release package, except for third-party
@@ -11,7 +16,14 @@ components that are distributed under their own licenses.
 
 ## Allowed Use
 
-You may download, install, and use this tool for personal, non-commercial use.
+You may:
+
+- Download, install, and use this tool for personal, non-commercial use.
+- View and inspect the source code.
+- Modify the source code for your own personal, non-commercial use.
+- Keep local or private backup copies for your own personal, non-commercial use.
+
+All allowed use is personal and non-commercial only.
 
 ## Prohibited Use
 
@@ -23,14 +35,20 @@ copyright holder:
 - Repost this tool.
 - Redistribute this tool.
 - Repackage this tool.
-- Host this tool on another website, file host, launcher, mod manager, or
-  repository.
+- Publish or distribute modified versions of this tool.
+- Host this tool, its source code, release archives, forks, mirrors, modified
+  versions, or derivative packages on another website, file host, launcher, mod
+  manager, package registry, repository hosting service, or repository outside
+  the official repository controlled by the copyright holder.
 - Sell this tool.
 - Put this tool behind a paywall.
 - Bundle this tool with paid content.
-- Use this tool for commercial distribution.
-- Charge money, points, credits, subscriptions, donations, or any other form of
-  payment for access to this tool.
+- Use this tool, its source code, modified versions, derivative packages, or any
+  related material for commercial, monetized, promotional, enterprise, business,
+  paid, revenue-generating, or for-profit purposes.
+- Charge money, points, credits, subscriptions, donations, advertising views, or
+  any other form of payment or compensation for access to this tool, its source
+  code, modified versions, derivative packages, or related material.
 
 ## No Support
 

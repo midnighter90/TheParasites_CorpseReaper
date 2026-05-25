@@ -138,10 +138,16 @@ versions of The Parasites.
 
 ## Terms
 
-This is **not** an open-source license.
+The source code is available in this repository for inspection, personal
+non-commercial use, and personal non-commercial modification.
+
+Because commercial use and hosting on other websites are prohibited, this is a
+custom restricted source-available license, not an OSI-approved open-source
+license.
 
 Personal, non-commercial use only. Reuploading, mirroring, reposting,
-redistribution, repackaging, paid distribution, and commercial use are
+redistribution, repackaging, publishing modified versions, hosting this tool or
+its source code on other websites, paid distribution, and all commercial use are
 prohibited without explicit written permission from the copyright holder.
 
 This tool is provided as-is, with no warranty, no support obligation, and no

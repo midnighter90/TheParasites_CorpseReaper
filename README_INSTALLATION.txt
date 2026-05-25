@@ -20,8 +20,8 @@ This package is provided as-is. There is no warranty, no support obligation, no
 liability, and no guarantee that this tool will keep working with future
 versions of The Parasites.
 
-Read COPYRIGHT_AND_TERMS.txt before publishing, mirroring, sharing, or using
-this package.
+Read COPYRIGHT_AND_TERMS.txt before publishing, mirroring, sharing, modifying,
+hosting, or using this package.
 
 Tested target
 -------------
