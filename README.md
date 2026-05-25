@@ -163,6 +163,12 @@ This package includes third-party runtime components. See
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and the files in
 [licenses](licenses).
 
+The package includes Oodle DLLs only to read and write existing The Parasites
+save chunks offline. Oodle belongs to its rightsholders, no ownership is claimed
+over it, and this package does not grant an Oodle license. If an authorized
+Oodle rightsholder asks for those DLLs to be removed, they will be removed
+promptly.
+
 The Parasites and Unreal Engine belong to their respective owners. This tool is
 unofficial and is not affiliated with, endorsed by, sponsored by, or approved by
 the developer, publisher, or rightsholder of The Parasites.

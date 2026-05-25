@@ -46,6 +46,21 @@ runtime\node_modules\oodle.js\oodle.js\bin\oodle-x64.dll
 Oodle and related names belong to their respective owners. No ownership is
 claimed over the Oodle library.
 
+### Oodle DLL Redistribution Notice
+
+The Oodle DLLs are included only because CorpseReaper needs Oodle-compatible
+compression and decompression to read and write existing The Parasites save
+chunks offline.
+
+This package does not claim ownership of Oodle, does not sell Oodle, and does
+not grant any license to Oodle beyond whatever rights the user already has.
+This notice is not a license from Epic Games Tools LLC, RAD Game Tools, or any
+other Oodle rightsholder.
+
+If Epic Games Tools LLC, RAD Game Tools, or another authorized Oodle
+rightsholder asks for the Oodle DLLs to be removed from this package or
+repository, they will be removed promptly.
+
 ## koffi
 
 This package includes koffi components used by oodle.js for native library

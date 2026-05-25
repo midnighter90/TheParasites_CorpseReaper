@@ -31,6 +31,12 @@ licenses\node-stream-zip-MIT-LICENSE.txt
 licenses\oodle-js-ISC-LICENSE.txt
 ```
 
+Oodle DLLs are included only for Oodle-compatible save chunk handling. This
+package does not claim ownership of Oodle and does not grant an Oodle license.
+If Epic Games Tools LLC, RAD Game Tools, or another authorized Oodle rightsholder
+asks for those DLLs to be removed, remove them from the package and repository
+promptly before publishing another release.
+
 The license prohibits commercial use and hosting this tool, its source code,
 release archives, forks, mirrors, modified versions, or derivative packages on
 another website, file host, launcher, mod manager, package registry, repository
