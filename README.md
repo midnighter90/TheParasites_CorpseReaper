@@ -164,10 +164,12 @@ This package includes third-party runtime components. See
 [licenses](licenses).
 
 The package includes Oodle DLLs only to read and write existing The Parasites
-save chunks offline. Oodle belongs to its rightsholders, no ownership is claimed
-over it, and this package does not grant an Oodle license. If an authorized
-Oodle rightsholder asks for those DLLs to be removed, they will be removed
-promptly.
+save chunks offline. The Oodle notice follows the substance of the
+[WorkingRobot/OodleUE EULA notice](https://github.com/WorkingRobot/OodleUE#eula-notice):
+users are responsible for complying with applicable Unreal Engine/Oodle terms,
+this project claims no ownership over Oodle or Epic build artifacts, and if an
+authorized rightsholder does not want the DLLs public here, they will be removed
+or a viable solution will be worked out.
 
 The Parasites and Unreal Engine belong to their respective owners. This tool is
 unofficial and is not affiliated with, endorsed by, sponsored by, or approved by

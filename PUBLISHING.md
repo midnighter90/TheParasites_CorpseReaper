@@ -31,11 +31,19 @@ licenses\node-stream-zip-MIT-LICENSE.txt
 licenses\oodle-js-ISC-LICENSE.txt
 ```
 
-Oodle DLLs are included only for Oodle-compatible save chunk handling. This
-package does not claim ownership of Oodle and does not grant an Oodle license.
-If Epic Games Tools LLC, RAD Game Tools, or another authorized Oodle rightsholder
-asks for those DLLs to be removed, remove them from the package and repository
-promptly before publishing another release.
+The Oodle notice follows the substance of the WorkingRobot/OodleUE EULA notice:
+
+```text
+https://github.com/WorkingRobot/OodleUE#eula-notice
+```
+
+Oodle DLLs are included only for Oodle-compatible save chunk handling. Users are
+responsible for complying with applicable Unreal Engine/Oodle terms. This
+package does not claim ownership of Oodle, Unreal Engine code, Epic server
+artifacts, or related build artifacts. If Epic Games Tools LLC, RAD Game Tools,
+Epic Games, or another authorized rightsholder does not want those DLLs public
+here, remove them from the package and repository or work out a viable
+alternative solution before publishing another release.
 
 The license prohibits commercial use and hosting this tool, its source code,
 release archives, forks, mirrors, modified versions, or derivative packages on
