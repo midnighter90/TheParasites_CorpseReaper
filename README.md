@@ -24,7 +24,7 @@ Current cleanup targets:
 - zombie DeathPose actors.
 - loose pickup item actors.
 - allowlisted loose resource actors, including branches, logs, split logs,
-  stones, and portable station worker resources.
+  stones, and slaves.
 
 Container contents are not edited. Storage-like pickup actors are skipped by
 the loose-item cleanup.

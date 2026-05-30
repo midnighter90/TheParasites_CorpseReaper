@@ -67,12 +67,6 @@ Start_CorpseReaper.cmd --prepare-loose-resource-prune savegame_1 --yes
 Start_CorpseReaper.cmd --restore <backup-folder-name> --yes
 ```
 
-## Project Scope
-
-CorpseReaper is kept focused on savegame cleanup. Trader-specific save editing
-experiments were split into a separate project so cleanup behavior and trader
-behavior can evolve independently.
-
 ## Release Notes
 
 ### v1.1.0
@@ -80,8 +74,6 @@ behavior can evolve independently.
 - Added loose item cleanup preparation.
 - Added loose resource cleanup preparation.
 - Added dedicated loose item and loose resource analysis commands.
-- Removed trader-specific code from CorpseReaper.
-- Kept the tool focused on cleanup save editing.
 
 ### v1.0.0
 

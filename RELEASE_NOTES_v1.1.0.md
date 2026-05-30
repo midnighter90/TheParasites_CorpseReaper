@@ -16,14 +16,9 @@ TheParasites_CorpseReaper_v1.1.0.zip
 - Storage-like loose pickup detection so backpacks, boxes, chests, containers,
   crates, and storage-like pickup actors are skipped.
 - Loose resource cleanup preparation for allowlisted resource actors: branches,
-  logs, split logs, stones, and portable station worker resources.
+  logs, split logs, stones, and slaves.
 - Dedicated analysis output for loose item and loose resource cleanup status.
 - CLI options for loose item and loose resource cleanup preparation.
-
-## Changed
-
-- CorpseReaper is now focused as the savegame cleanup editor. Trader-related
-  save editing experiments were split into a separate project.
 
 ## Usage
 
