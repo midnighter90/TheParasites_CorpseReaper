@@ -1,10 +1,10 @@
-The Parasites CorpseReaper v1.0.0
+The Parasites CorpseReaper v1.1.0
 
-Release date: 2026-05-24
+Release date: 2026-05-30
 Prepared for: The Parasites TP_Alpha_v_0.1.5.0.0
 Platform: Windows
 Runtime: Portable Node.js included
-Purpose: Offline zombie save cleaner and prune preparation
+Purpose: Offline savegame cleanup editor and prune preparation
 
 This package is provided as-is, without warranty, support obligation, or future
 update guarantee. See COPYRIGHT_AND_TERMS.txt.

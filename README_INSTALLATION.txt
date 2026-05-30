@@ -1,13 +1,23 @@
-The Parasites CorpseReaper v1.0.0
+The Parasites CorpseReaper v1.1.0
 Portable save cleaner and usage
 
 What this tool does
 -------------------
-CorpseReaper is an offline save tool for savegame_* slots.
+CorpseReaper is an offline cleanup tool for savegame_* slots.
 
-It prepares compatible zombie DeathPose actor records for a one-time in-game
-prune pass. After the prepared slot is loaded and saved once in-game, The
-Parasites stops writing those invalid zombie actors back into the save.
+It prepares compatible saved actors for one-time in-game prune passes. After a
+prepared slot is loaded and saved once in-game, The Parasites should stop
+writing those invalid actors back into the save.
+
+Current cleanup targets:
+
+  - zombie DeathPose actors.
+  - loose pickup item actors.
+  - allowlisted loose resource actors, including branches, logs, split logs,
+    stones, and portable station worker resources.
+
+Container contents are not edited. Storage-like pickup actors are skipped by
+the loose-item cleanup.
 
 The tool is designed to keep Level.sav structurally valid, length-preserving,
 and readable by the game.
@@ -54,9 +64,9 @@ Recommended workflow
 3. Extract this package anywhere.
 4. Run:
 
-   Start_CorpseReaper_Prune_Prepare.cmd
+   Start_CorpseReaper.cmd
 
-5. Choose a slot, for example savegame_5 or later savegame_1.
+5. Choose the cleanup pass and slot.
 6. The tool automatically creates a full backup of the slot folder.
 7. Start the game and load the slot.
 8. Check that buildings, crafting stations, traps, and containers are still
@@ -79,7 +89,7 @@ Run:
 
   Start_CorpseReaper.cmd
 
-The menu can prepare a slot, restore a backup, or analyze savegames only.
+The menu can prepare cleanup passes, restore a backup, or analyze savegames.
 
 Command-line usage
 ------------------
@@ -94,6 +104,8 @@ Analyze a slot:
 Prepare a slot without confirmation prompts:
 
   Start_CorpseReaper.cmd --prepare-prune savegame_1 --yes
+  Start_CorpseReaper.cmd --prepare-loose-item-prune savegame_1 --yes
+  Start_CorpseReaper.cmd --prepare-loose-resource-prune savegame_1 --yes
 
 Restore a backup without confirmation prompts:
 
@@ -130,6 +142,10 @@ CorpseReaper patches compatible ALS_Zombie_DeathPose_C_* records to an
 intentionally invalid class path with the same length:
 
   /Game/Zombisys/Zombie_Logic/ALS_Zombie_NoActor__.ALS_Zombie_NoActor___C
+
+CorpseReaper can also patch loose pickup item actors and allowlisted loose
+resource actors to same-length invalid class paths. Container contents and
+storage-like pickup actors are not edited.
 
 After this step, load the slot in-game, save normally, exit the game, then
 verify with --analyze.

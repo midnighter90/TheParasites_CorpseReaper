@@ -25,6 +25,18 @@ const GAME_PROCESS_NAME = "TheParasites";
 const TARGET_CLASS = "/Game/JigSInventory/Demo/Pickups/StaticMesh/BP_Antiradin.BP_Antiradin_C";
 const PRUNE_CLASS = "/Game/Zombisys/Zombie_Logic/ALS_Zombie_NoActor__.ALS_Zombie_NoActor___C";
 const DEATH_POSE_PREFIX = "ALS_Zombie_DeathPose_C_";
+const LOOSE_PICKUP_CLASS_PREFIX = "/Game/JigSInventory/Demo/Pickups/";
+const INVALID_LOOSE_PICKUP_BASE_NAME = "BP_NoLooseItem";
+const INVALID_LOOSE_PICKUP_PREFIXES = ["/Game/Invalid/", "/Game/_Invalid/"];
+const STORAGE_LIKE_PICKUP_MARKERS = ["backpack", "box", "chest", "container", "crate", "storage"];
+const INVALID_LOOSE_RESOURCE_BASE_NAME = "BP_NoLooseResource";
+const LOOSE_RESOURCE_CLASSES = new Set([
+  "/Game/BuildingSystem/Blueprints/Resources/BP_Resources_Branch.BP_Resources_Branch_C",
+  "/Game/BuildingSystem/Blueprints/Resources/BP_Resources_Log.BP_Resources_Log_C",
+  "/Game/BuildingSystem/Blueprints/Resources/BP_Resources_Slave1.BP_Resources_Slave1_C",
+  "/Game/BuildingSystem/Blueprints/Resources/BP_Resources_Split_Log.BP_Resources_Split_Log_C",
+  "/Game/BuildingSystem/Blueprints/Resources/BP_Resources_Stone.BP_Resources_Stone_C",
+]);
 const KNOWN_RECLASS_SOURCES = new Set([
   "/Game/Zombisys/Zombie_Logic/ALS_Zombie_DeathPose.ALS_Zombie_DeathPose_C",
   "/Game/JigSInventory/Demo/Pickups/SkeletalMesh/BP_Scorpion.BP_Scorpion_C",
@@ -154,6 +166,55 @@ function encodeShiftedString(text) {
   return out;
 }
 
+function makeInvalidLoosePickupClass(sourceLength) {
+  return makeInvalidClassPath(sourceLength, INVALID_LOOSE_PICKUP_BASE_NAME);
+}
+
+function makeInvalidLooseResourceClass(sourceLength) {
+  return makeInvalidClassPath(sourceLength, INVALID_LOOSE_RESOURCE_BASE_NAME);
+}
+
+function makeInvalidClassPath(sourceLength, baseName) {
+  for (const prefix of INVALID_LOOSE_PICKUP_PREFIXES) {
+    const remaining = sourceLength - prefix.length - 3;
+    if (remaining < baseName.length * 2 || remaining % 2 !== 0) continue;
+    const nameLength = remaining / 2;
+    const className = baseName + "_".repeat(nameLength - baseName.length);
+    const candidate = `${prefix}${className}.${className}_C`;
+    if (candidate.length === sourceLength) return candidate;
+  }
+  throw new Error(`Cannot generate an invalid class path with length ${sourceLength}`);
+}
+
+function isGeneratedLoosePickupPruneClass(classPath) {
+  return INVALID_LOOSE_PICKUP_PREFIXES.some((prefix) => classPath.startsWith(`${prefix}${INVALID_LOOSE_PICKUP_BASE_NAME}`));
+}
+
+function isGeneratedLooseResourcePruneClass(classPath) {
+  return INVALID_LOOSE_PICKUP_PREFIXES.some((prefix) => classPath.startsWith(`${prefix}${INVALID_LOOSE_RESOURCE_BASE_NAME}`));
+}
+
+function isRuntimeActorName(objectName) {
+  return /_C_\d+$/.test(objectName);
+}
+
+function isLoosePickupRecord(record) {
+  if (!record.classPath.startsWith(LOOSE_PICKUP_CLASS_PREFIX)) return false;
+  if (!isRuntimeActorName(record.objectName)) return false;
+  const text = `${record.classPath} ${record.objectName}`.toLowerCase();
+  if (text.includes("zombie")) return false;
+  return true;
+}
+
+function isStorageLikePickupRecord(record) {
+  const text = `${record.classPath} ${record.objectName}`.toLowerCase();
+  return STORAGE_LIKE_PICKUP_MARKERS.some((marker) => text.includes(marker));
+}
+
+function isLooseResourceRecord(record) {
+  return LOOSE_RESOURCE_CLASSES.has(record.classPath) && isRuntimeActorName(record.objectName);
+}
+
 function findActorRecords(decoded) {
   const starts = [];
   const classPrefix = Buffer.from([0x2e, 0x46, 0x60, 0x6c, 0x64]);
@@ -273,7 +334,80 @@ function classifyRecords(records) {
     return KNOWN_PRUNE_SOURCES.has(record.classPath) || record.classPath.includes("Zombie");
   });
   const skippedLength = allZombieRecords.filter((record) => record.classPath.includes("Zombie") && record.classPath.length !== targetLen);
-  return { allZombieRecords, alreadyAntiradin, alreadyPruneClass, patchable, prunePatchable, skippedLength };
+  const loosePickupRecords = records.filter(isLoosePickupRecord);
+  const storageLikeLoosePickups = loosePickupRecords.filter(isStorageLikePickupRecord);
+  const looseItemPatchable = loosePickupRecords.filter((record) => !isStorageLikePickupRecord(record));
+  const alreadyLooseItemPruneClass = records.filter((record) => isRuntimeActorName(record.objectName) && isGeneratedLoosePickupPruneClass(record.classPath));
+  const looseResourceRecords = records.filter(isLooseResourceRecord);
+  const alreadyLooseResourcePruneClass = records.filter((record) => isRuntimeActorName(record.objectName) && isGeneratedLooseResourcePruneClass(record.classPath));
+  return {
+    allZombieRecords,
+    alreadyAntiradin,
+    alreadyPruneClass,
+    patchable,
+    prunePatchable,
+    skippedLength,
+    loosePickupRecords,
+    storageLikeLoosePickups,
+    looseItemPatchable,
+    alreadyLooseItemPruneClass,
+    looseResourceRecords,
+    alreadyLooseResourcePruneClass,
+  };
+}
+
+function summarizeRecordsByClass(records) {
+  const summary = new Map();
+  for (const record of records) {
+    const current = summary.get(record.classPath) || { classPath: record.classPath, count: 0, examples: [] };
+    current.count += 1;
+    if (current.examples.length < 3) current.examples.push(record.objectName);
+    summary.set(record.classPath, current);
+  }
+  return [...summary.values()].sort((a, b) => b.count - a.count || a.classPath.localeCompare(b.classPath));
+}
+
+function printRecordSummaryByClass(records, limit = 20) {
+  const summary = summarizeRecordsByClass(records);
+  for (const entry of summary.slice(0, limit)) {
+    console.log(`  - ${entry.count} x ${entry.classPath}`);
+    console.log(`    examples: ${entry.examples.join(", ")}`);
+  }
+  if (summary.length > limit) console.log(`  ... ${summary.length - limit} more classes`);
+}
+
+function printLooseItemDetails(classified) {
+  console.log("");
+  console.log("Loose item actor details:");
+  console.log(`  Loose pickup actor records: ${classified.loosePickupRecords.length}`);
+  console.log(`  Patchable loose item actors: ${classified.looseItemPatchable.length}`);
+  console.log(`  Storage-like pickup actors skipped: ${classified.storageLikeLoosePickups.length}`);
+  console.log(`  Already using loose-item prune class: ${classified.alreadyLooseItemPruneClass.length}`);
+
+  if (classified.looseItemPatchable.length > 0) {
+    console.log("");
+    console.log("Patchable loose item classes:");
+    printRecordSummaryByClass(classified.looseItemPatchable);
+  }
+
+  if (classified.storageLikeLoosePickups.length > 0) {
+    console.log("");
+    console.log("Skipped storage-like pickup classes:");
+    printRecordSummaryByClass(classified.storageLikeLoosePickups, 12);
+  }
+}
+
+function printLooseResourceDetails(classified) {
+  console.log("");
+  console.log("Loose resource actor details:");
+  console.log(`  Loose resource actor records: ${classified.looseResourceRecords.length}`);
+  console.log(`  Already using loose-resource prune class: ${classified.alreadyLooseResourcePruneClass.length}`);
+
+  if (classified.looseResourceRecords.length > 0) {
+    console.log("");
+    console.log("Patchable loose resource classes:");
+    printRecordSummaryByClass(classified.looseResourceRecords);
+  }
 }
 
 async function analyzeSlot(slot, verbose = true) {
@@ -300,6 +434,12 @@ async function analyzeSlot(slot, verbose = true) {
     if (classified.skippedLength.length > 0) {
       console.log(`  Skipped because of different class length: ${classified.skippedLength.length}`);
     }
+    console.log(`  Loose pickup actor records: ${classified.loosePickupRecords.length}`);
+    console.log(`  Patchable loose item actors: ${classified.looseItemPatchable.length}`);
+    console.log(`  Storage-like pickup actors skipped: ${classified.storageLikeLoosePickups.length}`);
+    console.log(`  Already using loose-item prune class: ${classified.alreadyLooseItemPruneClass.length}`);
+    console.log(`  Loose resource actor records: ${classified.looseResourceRecords.length}`);
+    console.log(`  Already using loose-resource prune class: ${classified.alreadyLooseResourcePruneClass.length}`);
   }
 
   return { decoded, records, classified, levelStat };
@@ -308,9 +448,11 @@ async function analyzeSlot(slot, verbose = true) {
 async function writeClassReplacement(slot, decoded, records, targetClass, backupReason) {
   const backup = makeBackup(slot, backupReason);
   const patched = Buffer.from(decoded);
-  const targetBytes = encodeShiftedString(targetClass);
+  const targetClassForRecord = typeof targetClass === "function" ? targetClass : () => targetClass;
 
   for (const record of records) {
+    const replacementClass = targetClassForRecord(record);
+    const targetBytes = encodeShiftedString(replacementClass);
     const classLength = patched.readInt32LE(record.start);
     if (classLength !== targetBytes.length) {
       throw new Error(`Internal error: class length does not match for ${record.objectName}`);
@@ -421,6 +563,130 @@ async function preparePruneSlot(slot, assumeYes = false) {
   console.log(`  New Level.sav size: ${formatBytes(newStat.size)}`);
   console.log("");
   console.log("Now load it in-game, save normally, exit the game, then verify with --analyze.");
+}
+
+async function analyzeLooseItemsSlot(slot) {
+  assertSlotName(slot);
+  const analysis = await analyzeSlot(slot, true);
+  printLooseItemDetails(analysis.classified);
+}
+
+async function prepareLooseItemPruneSlot(slot, assumeYes = false) {
+  assertSlotName(slot);
+  if (gameIsRunning()) {
+    throw new Error("The Parasites is still running. Please close the game completely before writing saves.");
+  }
+
+  const analysis = await analyzeSlot(slot, true);
+  const { looseItemPatchable, storageLikeLoosePickups, alreadyLooseItemPruneClass } = analysis.classified;
+
+  if (looseItemPatchable.length === 0) {
+    console.log("");
+    if (alreadyLooseItemPruneClass.length > 0) {
+      console.log("This slot is already prepared for the loose-item prune load/save pass.");
+    } else {
+      console.log("No patchable loose item pickup actors found.");
+    }
+    if (storageLikeLoosePickups.length > 0) {
+      console.log(`Storage-like pickup actors were skipped for safety: ${storageLikeLoosePickups.length}`);
+    }
+    return;
+  }
+
+  console.log("");
+  console.log("Loose item classes that will be redirected to invalid prune classes:");
+  printRecordSummaryByClass(looseItemPatchable);
+  if (storageLikeLoosePickups.length > 0) {
+    console.log("");
+    console.log(`Storage-like pickup actors skipped for safety: ${storageLikeLoosePickups.length}`);
+    printRecordSummaryByClass(storageLikeLoosePickups, 12);
+  }
+  console.log("");
+  console.log("Container and inventory arrays are not edited. Only loose pickup actor class paths are changed.");
+  console.log("After this step: load the slot in-game, save once normally, exit the game, then analyze again.");
+
+  if (!assumeYes) {
+    const ok = await askYesNo(`Create a backup and prepare ${looseItemPatchable.length} loose item actors for pruning?`, false);
+    if (!ok) {
+      console.log("Cancelled.");
+      return;
+    }
+  }
+
+  const { backup, newStat } = await writeClassReplacement(
+    slot,
+    analysis.decoded,
+    looseItemPatchable,
+    (record) => makeInvalidLoosePickupClass(record.classPath.length),
+    "before_loose_item_prune",
+  );
+  console.log("");
+  console.log("Done. The slot is prepared for the loose-item in-game prune pass.");
+  console.log(`  Backup: ${backup}`);
+  console.log(`  Written: ${levelPath(slot)}`);
+  console.log(`  New Level.sav size: ${formatBytes(newStat.size)}`);
+  console.log("");
+  console.log("Now load it in-game, save normally, exit the game, then verify with --analyze-loose-items.");
+}
+
+async function analyzeLooseResourcesSlot(slot) {
+  assertSlotName(slot);
+  const analysis = await analyzeSlot(slot, true);
+  printLooseResourceDetails(analysis.classified);
+}
+
+async function prepareLooseResourcePruneSlot(slot, assumeYes = false) {
+  assertSlotName(slot);
+  if (gameIsRunning()) {
+    throw new Error("The Parasites is still running. Please close the game completely before writing saves.");
+  }
+
+  const analysis = await analyzeSlot(slot, true);
+  const { looseResourceRecords, alreadyLooseResourcePruneClass } = analysis.classified;
+
+  if (looseResourceRecords.length === 0) {
+    console.log("");
+    if (alreadyLooseResourcePruneClass.length > 0) {
+      console.log("This slot is already prepared for the loose-resource prune load/save pass.");
+    } else {
+      console.log("No patchable loose resource actors found.");
+    }
+    return;
+  }
+
+  console.log("");
+  console.log("Loose resource classes that will be redirected to invalid prune classes:");
+  printRecordSummaryByClass(looseResourceRecords);
+  console.log("");
+  console.log("Only allowlisted loose resource actor class paths are changed:");
+  for (const classPath of LOOSE_RESOURCE_CLASSES) {
+    console.log(`  - ${classPath}`);
+  }
+  console.log("Container, inventory, building, wall, fence, loot-container, and storage actors are not edited.");
+  console.log("After this step: load the slot in-game, save once normally, exit the game, then analyze again.");
+
+  if (!assumeYes) {
+    const ok = await askYesNo(`Create a backup and prepare ${looseResourceRecords.length} loose resource actors for pruning?`, false);
+    if (!ok) {
+      console.log("Cancelled.");
+      return;
+    }
+  }
+
+  const { backup, newStat } = await writeClassReplacement(
+    slot,
+    analysis.decoded,
+    looseResourceRecords,
+    (record) => makeInvalidLooseResourceClass(record.classPath.length),
+    "before_loose_resource_prune",
+  );
+  console.log("");
+  console.log("Done. The slot is prepared for the loose-resource in-game prune pass.");
+  console.log(`  Backup: ${backup}`);
+  console.log(`  Written: ${levelPath(slot)}`);
+  console.log(`  New Level.sav size: ${formatBytes(newStat.size)}`);
+  console.log("");
+  console.log("Now load it in-game, save normally, exit the game, then verify with --analyze-loose-resources.");
 }
 
 async function decodeLevelSavBuffer(data) {
@@ -560,20 +826,36 @@ async function menu() {
   for (;;) {
     console.log("");
     console.log("Menu");
-    console.log("  1. Choose savegame and prepare prune pass (recommended)");
-    console.log("  2. Restore backup");
-    console.log("  3. Analyze savegames only");
-    console.log("  4. Exit");
+    console.log("  1. Choose savegame and prepare zombie prune pass");
+    console.log("  2. Choose savegame and prepare loose item prune pass");
+    console.log("  3. Choose savegame and prepare loose resource prune pass");
+    console.log("  4. Restore backup");
+    console.log("  5. Analyze savegames only");
+    console.log("  6. Analyze loose items in one savegame");
+    console.log("  7. Analyze loose resources in one savegame");
+    console.log("  8. Exit");
     const choice = (await ask("Selection: ")).trim();
 
     if (choice === "1") {
       const slot = await chooseSlot();
       if (slot) await preparePruneSlot(slot, false);
     } else if (choice === "2") {
-      await restoreBackup();
+      const slot = await chooseSlot();
+      if (slot) await prepareLooseItemPruneSlot(slot, false);
     } else if (choice === "3") {
+      const slot = await chooseSlot();
+      if (slot) await prepareLooseResourcePruneSlot(slot, false);
+    } else if (choice === "4") {
+      await restoreBackup();
+    } else if (choice === "5") {
       await printSlotList(true);
-    } else if (choice === "4" || choice === "") {
+    } else if (choice === "6") {
+      const slot = await chooseSlot();
+      if (slot) await analyzeLooseItemsSlot(slot);
+    } else if (choice === "7") {
+      const slot = await chooseSlot();
+      if (slot) await analyzeLooseResourcesSlot(slot);
+    } else if (choice === "8" || choice === "") {
       break;
     } else {
       console.log("Invalid selection.");
@@ -591,7 +873,11 @@ async function main() {
     console.log("  Start_CorpseReaper.cmd");
     console.log("  Start_CorpseReaper.cmd --list");
     console.log("  Start_CorpseReaper.cmd --analyze savegame_1");
+    console.log("  Start_CorpseReaper.cmd --analyze-loose-items savegame_1");
+    console.log("  Start_CorpseReaper.cmd --analyze-loose-resources savegame_1");
     console.log("  Start_CorpseReaper.cmd --prepare-prune savegame_1 --yes");
+    console.log("  Start_CorpseReaper.cmd --prepare-loose-item-prune savegame_1 --yes");
+    console.log("  Start_CorpseReaper.cmd --prepare-loose-resource-prune savegame_1 --yes");
     console.log("  Start_CorpseReaper.cmd --restore <backup-folder-name> --yes");
     console.log("");
     console.log("Optional: set TP_SAVE_ROOT if your saves are not in the default path.");
@@ -612,11 +898,43 @@ async function main() {
     return;
   }
 
+  const looseAnalyzeIndex = args.indexOf("--analyze-loose-items");
+  if (looseAnalyzeIndex !== -1) {
+    const slot = args[looseAnalyzeIndex + 1];
+    if (!slot) throw new Error("--analyze-loose-items needs a slot, e.g. savegame_1");
+    await analyzeLooseItemsSlot(slot);
+    return;
+  }
+
   const pruneIndex = args.indexOf("--prepare-prune");
   if (pruneIndex !== -1) {
     const slot = args[pruneIndex + 1];
     if (!slot) throw new Error("--prepare-prune needs a slot, e.g. savegame_1");
     await preparePruneSlot(slot, yes);
+    return;
+  }
+
+  const looseResourceAnalyzeIndex = args.indexOf("--analyze-loose-resources");
+  if (looseResourceAnalyzeIndex !== -1) {
+    const slot = args[looseResourceAnalyzeIndex + 1];
+    if (!slot) throw new Error("--analyze-loose-resources needs a slot, e.g. savegame_1");
+    await analyzeLooseResourcesSlot(slot);
+    return;
+  }
+
+  const loosePruneIndex = args.indexOf("--prepare-loose-item-prune");
+  if (loosePruneIndex !== -1) {
+    const slot = args[loosePruneIndex + 1];
+    if (!slot) throw new Error("--prepare-loose-item-prune needs a slot, e.g. savegame_1");
+    await prepareLooseItemPruneSlot(slot, yes);
+    return;
+  }
+
+  const looseResourcePruneIndex = args.indexOf("--prepare-loose-resource-prune");
+  if (looseResourcePruneIndex !== -1) {
+    const slot = args[looseResourcePruneIndex + 1];
+    if (!slot) throw new Error("--prepare-loose-resource-prune needs a slot, e.g. savegame_1");
+    await prepareLooseResourcePruneSlot(slot, yes);
     return;
   }
 

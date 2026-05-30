@@ -67,7 +67,7 @@ Run these commands from this local repository folder:
 cd "<local repository folder>"
 git remote add origin https://github.com/YOUR_GITHUB_NAME/TheParasites_CorpseReaper.git
 git push -u origin main
-git push origin v1.0.0
+git push origin v1.1.0
 ```
 
 If you use SSH instead of HTTPS:
@@ -76,7 +76,7 @@ If you use SSH instead of HTTPS:
 cd "<local repository folder>"
 git remote add origin git@github.com:YOUR_GITHUB_NAME/TheParasites_CorpseReaper.git
 git push -u origin main
-git push origin v1.0.0
+git push origin v1.1.0
 ```
 
 ## Create The GitHub Release
@@ -87,25 +87,25 @@ git push origin v1.0.0
 4. Select the existing tag:
 
 ```text
-v1.0.0
+v1.1.0
 ```
 
 5. Release title:
 
 ```text
-The Parasites CorpseReaper v1.0.0
+The Parasites CorpseReaper v1.1.0
 ```
 
 6. Paste the contents of:
 
 ```text
-RELEASE_NOTES_v1.0.0.md
+RELEASE_NOTES_v1.1.0.md
 ```
 
 7. Attach the release ZIP:
 
 ```text
-<release ZIP path>\TheParasites_CorpseReaper_v1.0.0.zip
+<release ZIP path>\TheParasites_CorpseReaper_v1.1.0.zip
 ```
 
 8. Publish the release.

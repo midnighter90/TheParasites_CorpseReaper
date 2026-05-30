@@ -1,6 +1,6 @@
 # The Parasites CorpseReaper
 
-Portable zombie save cleaner for the Windows version of **The Parasites**.
+Portable savegame cleanup editor for the Windows version of **The Parasites**.
 
 Prepared for:
 
@@ -13,17 +13,27 @@ No compatibility is promised for other game versions.
 
 ## What It Does
 
-CorpseReaper is an offline save tool for `savegame_*` slots.
+CorpseReaper is an offline cleanup tool for `savegame_*` slots.
 
-It prepares compatible zombie DeathPose actor records for a one-time in-game
-prune pass. After the prepared slot is loaded and saved once in-game, The
-Parasites stops writing those invalid zombie actors back into the save.
+It prepares compatible saved actors for one-time in-game prune passes. After a
+prepared slot is loaded and saved once in-game, The Parasites should stop
+writing those invalid actors back into the save.
+
+Current cleanup targets:
+
+- zombie DeathPose actors.
+- loose pickup item actors.
+- allowlisted loose resource actors, including branches, logs, split logs,
+  stones, and portable station worker resources.
+
+Container contents are not edited. Storage-like pickup actors are skipped by
+the loose-item cleanup.
 
 Recommended workflow:
 
 1. Close The Parasites completely.
-2. Run `Start_CorpseReaper_Prune_Prepare.cmd`.
-3. Choose a slot, for example `savegame_5` or later `savegame_1`.
+2. Run `Start_CorpseReaper.cmd`.
+3. Choose the cleanup pass and slot.
 4. The tool automatically creates a full backup of the slot folder.
 5. Start the game and load the slot.
 6. Check that buildings, crafting stations, traps, and containers are still
@@ -50,7 +60,11 @@ CorpseReaper:
 ```
 
 - patches compatible `ALS_Zombie_DeathPose_C_*` records to an intentionally
-  invalid class path with the same length:
+  invalid class path with the same length.
+- patches loose pickup actors to intentionally invalid class paths of the same
+  length, while skipping storage-like actors.
+- patches allowlisted loose resource actors to intentionally invalid class paths
+  of the same length.
 
 ```text
 /Game/Zombisys/Zombie_Logic/ALS_Zombie_NoActor__.ALS_Zombie_NoActor___C
@@ -88,6 +102,8 @@ CLI options:
 Start_CorpseReaper.cmd --list
 Start_CorpseReaper.cmd --analyze savegame_1
 Start_CorpseReaper.cmd --prepare-prune savegame_1 --yes
+Start_CorpseReaper.cmd --prepare-loose-item-prune savegame_1 --yes
+Start_CorpseReaper.cmd --prepare-loose-resource-prune savegame_1 --yes
 Start_CorpseReaper.cmd --restore <backup-folder-name> --yes
 ```
 
